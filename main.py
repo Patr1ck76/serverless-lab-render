@@ -7,17 +7,17 @@ app = Flask(__name__)
 
 # Подключение к БД
 DATABASE_URL = os.environ.get('DATABASE_URL')
+conn = None
 if DATABASE_URL:
     url = urlparse(DATABASE_URL)
+    # psycopg v3 использует dbname вместо database
     conn = psycopg.connect(
-        database=url.path[1:],
+        dbname=url.path[1:],       # <-- изменено
         user=url.username,
         password=url.password,
         host=url.hostname,
         port=url.port
     )
-else:
-    conn = None
 
 # Создание таблицы при старте
 if conn:
@@ -56,7 +56,6 @@ def get_messages():
 
     messages = [{"id": r[0], "text": r[1], "time": r[2].isoformat()} for r in rows]
     return jsonify(messages)
-
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
